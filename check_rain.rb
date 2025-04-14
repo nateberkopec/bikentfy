@@ -11,7 +11,6 @@ LONGITUDE = ENV.fetch('LONGITUDE')
 NTFY_TOPIC = ENV.fetch('NTFY_TOPIC')
 TIMEZONE = ENV.fetch('TIMEZONE')
 WEATHER_MODEL = ENV.fetch('WEATHER_MODEL')
-SNITCH_ID = ENV.fetch('SNITCH_ID')
 
 def debug(msg)
   puts(msg) if ENV['DEBUG'] == 'true'
@@ -92,7 +91,7 @@ def notify(rain_info)
 end
 
 def ping_snitch
-  uri = URI("https://nosnch.in/#{SNITCH_ID}")
+  uri = URI("https://nosnch.in/#{ENv['SNITCH_ID']}")
   debug "Pinging snitch."
   Net::HTTP.get_response(uri)
 end
