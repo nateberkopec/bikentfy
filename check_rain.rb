@@ -91,7 +91,7 @@ def notify(rain_info)
 end
 
 def ping_snitch
-  uri = URI("https://nosnch.in/#{ENv["SNITCH_ID"]}")
+  uri = URI("https://nosnch.in/#{ENV["SNITCH_ID"]}")
   debug "Pinging snitch."
   Net::HTTP.get_response(uri)
 end
