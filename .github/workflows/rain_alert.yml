@@ -1,0 +1,21 @@
+name: Rain Alert
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # 17:00 JST (UTC+9) is 08:00 UTC
+
+jobs:
+  check-rain:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Run rain check
+        run: |
+          bundle exec ruby check_rain.rb

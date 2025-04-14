@@ -1,0 +1,28 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      LATITUDE: 35.6586
+      LONGITUDE: 139.7454
+      NTFY_TOPIC: bike-rain-alert
+      TIMEZONE: Asia/Tokyo
+      WEATHER_MODEL: best_fit
+      DEBUG: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Run tests
+        run: |
+          bundle exec ruby test_check_rain.rb
