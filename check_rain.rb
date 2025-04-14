@@ -1,19 +1,19 @@
 #!/usr/bin/env ruby
 
-require 'net/http'
-require 'json'
-require 'uri'
-require 'time'
-require 'tzinfo'
+require "net/http"
+require "json"
+require "uri"
+require "time"
+require "tzinfo"
 
-LATITUDE = ENV.fetch('LATITUDE')
-LONGITUDE = ENV.fetch('LONGITUDE')
-NTFY_TOPIC = ENV.fetch('NTFY_TOPIC')
-TIMEZONE = ENV.fetch('TIMEZONE')
-WEATHER_MODEL = ENV.fetch('WEATHER_MODEL')
+LATITUDE = ENV.fetch("LATITUDE")
+LONGITUDE = ENV.fetch("LONGITUDE")
+NTFY_TOPIC = ENV.fetch("NTFY_TOPIC")
+TIMEZONE = ENV.fetch("TIMEZONE")
+WEATHER_MODEL = ENV.fetch("WEATHER_MODEL")
 
 def debug(msg)
-  puts(msg) if ENV['DEBUG'] == 'true'
+  puts(msg) if ENV["DEBUG"] == "true"
 end
 
 def weather_uri
@@ -62,7 +62,7 @@ def create_rain_info(precip, times, start_idx, hour)
   start_time = Time.parse(times[start_idx + rain_idx])
   hours_until = ((start_time - hour) / 3600).round
 
-  { will_rain: true, start_time: start_time, hours_until: hours_until }
+  {will_rain: true, start_time: start_time, hours_until: hours_until}
 end
 
 def rain_info(weather_data)
@@ -84,22 +84,21 @@ def notify(rain_info)
 
   time = rain_info[:start_time].strftime("%-I%p").downcase
   hours = rain_info[:hours_until]
-  request.body = "Rain expected in #{hours} #{hours == 1 ? 'hour' : 'hours'} at #{time}. Cover the bike!"
+  request.body = "Rain expected in #{hours} #{(hours == 1) ? "hour" : "hours"} at #{time}. Cover the bike!"
 
   debug "Sending: #{request.body}"
   Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }
 end
 
 def ping_snitch
-  uri = URI("https://nosnch.in/#{ENv['SNITCH_ID']}")
+  uri = URI("https://nosnch.in/#{ENv["SNITCH_ID"]}")
   debug "Pinging snitch."
   Net::HTTP.get_response(uri)
 end
 
 if (info = rain_info(fetch_weather))
   notify(info)
-  ping_snitch if ENV['SNITCH_ID']
+  ping_snitch if ENV["SNITCH_ID"]
 else
   debug "No rain expected in the next 24 hours."
 end
-
