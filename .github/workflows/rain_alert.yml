@@ -14,6 +14,7 @@ jobs:
       NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
       TIMEZONE: ${{ secrets.TIMEZONE }}
       WEATHER_MODEL: ${{ secrets.WEATHER_MODEL }}
+      DEBUG: true
 
     steps:
       - uses: actions/checkout@v4
