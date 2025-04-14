@@ -11,6 +11,7 @@ LONGITUDE = ENV.fetch('LONGITUDE')
 NTFY_TOPIC = ENV.fetch('NTFY_TOPIC')
 TIMEZONE = ENV.fetch('TIMEZONE')
 WEATHER_MODEL = ENV.fetch('WEATHER_MODEL')
+SNITCH_ID = ENV.fetch('SNITCH_ID')
 
 def debug(msg)
   puts(msg) if ENV['DEBUG'] == 'true'
@@ -90,8 +91,15 @@ def notify(rain_info)
   Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }
 end
 
+def ping_snitch
+  uri = URI("https://nosnch.in/#{SNITCH_ID}")
+  debug "Pinging snitch."
+  Net::HTTP.get_response(uri)
+end
+
 if (info = rain_info(fetch_weather))
   notify(info)
+  ping_snitch if ENV['SNITCH_ID']
 else
   debug "No rain expected in the next 24 hours."
 end
