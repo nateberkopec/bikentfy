@@ -8,6 +8,12 @@ on:
 jobs:
   check-rain:
     runs-on: ubuntu-latest
+    env:
+      LATITUDE: ${{ secrets.LATITUDE }}
+      LONGITUDE: ${{ secrets.LONGITUDE }}
+      NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+      TIMEZONE: ${{ secrets.TIMEZONE }}
+      WEATHER_MODEL: ${{ secrets.WEATHER_MODEL }}
 
     steps:
       - uses: actions/checkout@v4
