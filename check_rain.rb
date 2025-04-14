@@ -31,7 +31,6 @@ end
 
 def fetch_weather
   uri = weather_uri
-  debug "Fetching weather from: #{uri}"
   JSON.parse(Net::HTTP.get_response(uri).body)
 end
 
