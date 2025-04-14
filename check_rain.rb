@@ -29,7 +29,11 @@ def weather_uri
   uri
 end
 
-def fetch_weather = JSON.parse(Net::HTTP.get_response(weather_uri).body)
+def fetch_weather
+  uri = weather_uri
+  debug "Fetching weather from: #{uri}"
+  JSON.parse(Net::HTTP.get_response(uri).body)
+end
 
 def current_hour
   tz = TZInfo::Timezone.get(TIMEZONE)
