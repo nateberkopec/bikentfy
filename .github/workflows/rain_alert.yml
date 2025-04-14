@@ -3,6 +3,7 @@ name: Rain Alert
 on:
   schedule:
     - cron: '0 8 * * *'  # 17:00 JST (UTC+9) is 08:00 UTC
+  workflow_dispatch:
 
 jobs:
   check-rain:
