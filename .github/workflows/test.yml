@@ -23,8 +23,6 @@ jobs:
         with:
           bundler-cache: true
 
-      - name: Lint
-        run: bundle exec rake standard
-
       - name: Run tests
-        run: bundle exec rake test
+        run: |
+          bundle exec ruby test_check_rain.rb

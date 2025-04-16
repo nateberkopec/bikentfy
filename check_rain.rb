@@ -11,7 +11,6 @@ LONGITUDE = ENV.fetch("LONGITUDE")
 NTFY_TOPIC = ENV.fetch("NTFY_TOPIC")
 TIMEZONE = ENV.fetch("TIMEZONE")
 WEATHER_MODEL = ENV.fetch("WEATHER_MODEL")
-NOTIFY_URL = URI("https://ntfy.sh/#{NTFY_TOPIC}")
 
 def debug(msg)
   puts(msg) if ENV["DEBUG"] == "true"
@@ -31,7 +30,8 @@ def weather_uri
 end
 
 def fetch_weather
-  JSON.parse(Net::HTTP.get_response(weather_uri).body)
+  uri = weather_uri
+  JSON.parse(Net::HTTP.get_response(uri).body)
 end
 
 def current_hour
@@ -78,20 +78,16 @@ def rain_info(weather_data)
   create_rain_info(precip, times, start_idx, hour)
 end
 
-def notify(time, hours)
-  request = Net::HTTP::Post.new(NOTIFY_URL)
+def notify(rain_info)
+  uri = URI("https://ntfy.sh/#{NTFY_TOPIC}")
+  request = Net::HTTP::Post.new(uri)
 
-  request.body = notification_body(time, hours)
+  time = rain_info[:start_time].strftime("%-I%p").downcase
+  hours = rain_info[:hours_until]
+  request.body = "Rain expected in #{hours} #{(hours == 1) ? "hour" : "hours"} at #{time}. Cover the bike!"
 
   debug "Sending: #{request.body}"
   Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }
-end
-
-def notification_body(time, hours)
-  formatted_time = time.strftime("%-I%p").downcase
-  hour_word = hours == 1 ? "hour" : "hours"
-
-  "Rain expected in #{hours} #{hour_word} at #{formatted_time}. Cover the bike!"
 end
 
 def ping_snitch
@@ -101,9 +97,7 @@ def ping_snitch
 end
 
 if (info = rain_info(fetch_weather))
-  time = info[:start_time]
-  hours = info[:hours_until]
-  notify(time, hours)
+  notify(info)
   ping_snitch if ENV["SNITCH_ID"]
 else
   debug "No rain expected in the next 24 hours."
