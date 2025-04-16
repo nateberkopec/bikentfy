@@ -98,7 +98,8 @@ end
 
 if (info = rain_info(fetch_weather))
   notify(info)
-  ping_snitch if ENV["SNITCH_ID"]
 else
   debug "No rain expected in the next 24 hours."
 end
+
+ping_snitch if ENV["SNITCH_ID"]
