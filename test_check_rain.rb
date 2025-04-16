@@ -71,4 +71,44 @@ class TestCheckRain < Minitest::Test
       assert_equal Time.parse("2025-04-14T09:00"), result[:start_time]
     end
   end
+
+  def test_find_rain_start_no_rain
+    precip = [0.0] * 24
+    times = (0..23).map { |h| "2025-04-14T#{h.to_s.rjust(2, '0')}:00" }
+
+    assert_nil find_rain_start(precip, times, 0)
+  end
+
+  def test_find_rain_start_rain_in_future
+    precip = [0.0] * 24
+    precip[17] = 1.0  # Rain at 17:00
+    times = (0..23).map { |h| "2025-04-14T#{h.to_s.rjust(2, '0')}:00" }
+
+    assert_equal 17, find_rain_start(precip, times, 0)
+  end
+
+  def test_find_rain_start_rain_soon
+    precip = [0.0] * 24
+    precip[1] = 1.0  # Rain in next hour
+    times = (0..23).map { |h| "2025-04-14T#{h.to_s.rjust(2, '0')}:00" }
+
+    assert_equal 1, find_rain_start(precip, times, 0)
+  end
+
+  def test_find_rain_start_rain_now
+    precip = [0.0] * 24
+    precip[0] = 1.0  # Rain now
+    times = (0..23).map { |h| "2025-04-14T#{h.to_s.rjust(2, '0')}:00" }
+
+    assert_equal 0, find_rain_start(precip, times, 0)
+  end
+
+  def test_find_rain_start_multiple_rain_periods
+    precip = [0.0] * 24
+    precip[2] = 1.0  # First rain at 2:00
+    precip[5] = 1.0  # Second rain at 5:00
+    times = (0..23).map { |h| "2025-04-14T#{h.to_s.rjust(2, '0')}:00" }
+
+    assert_equal 2, find_rain_start(precip, times, 0)  # Should find first rain
+  end
 end

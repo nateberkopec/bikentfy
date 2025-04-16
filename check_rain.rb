@@ -11,83 +11,67 @@ LONGITUDE = ENV.fetch("LONGITUDE")
 NTFY_TOPIC = ENV.fetch("NTFY_TOPIC")
 TIMEZONE = ENV.fetch("TIMEZONE")
 WEATHER_MODEL = ENV.fetch("WEATHER_MODEL")
+NOTIFY_URL = URI("https://ntfy.sh/#{NTFY_TOPIC}")
+METEO_URL = "https://api.open-meteo.com/v1/forecast"
 
 def debug(msg)
   puts(msg) if ENV["DEBUG"] == "true"
 end
 
 def weather_uri
-  uri = URI("https://api.open-meteo.com/v1/forecast")
-  uri.query = URI.encode_www_form(
-    latitude: LATITUDE,
-    longitude: LONGITUDE,
-    hourly: "precipitation",
-    timezone: TIMEZONE,
-    models: WEATHER_MODEL,
-    forecast_days: 3
-  )
-  uri
+  URI(METEO_URL).tap do |uri|
+    uri.query = URI.encode_www_form(
+      latitude: LATITUDE,
+      longitude: LONGITUDE,
+      hourly: "precipitation",
+      timezone: TIMEZONE,
+      models: WEATHER_MODEL,
+      forecast_days: 3 # AFAIK the only options are 1 and 3, we really only need 2
+    )
+  end
 end
 
-def fetch_weather
-  uri = weather_uri
-  JSON.parse(Net::HTTP.get_response(uri).body)
-end
+def fetch_weather = JSON.parse(Net::HTTP.get_response(weather_uri).body)
 
-def current_hour
-  tz = TZInfo::Timezone.get(TIMEZONE)
-  now = tz.now
-  Time.new(now.year, now.month, now.day, now.hour)
-end
-
-def find_rain_start(precip, times, start_idx)
-  precip[start_idx, 24].each_with_index do |p, i|
+def find_rain_start(precip, times, hour)
+  debug "Precipitation for next 24 hours: #{precip[hour, 24]}"
+  precip[hour, 24].each_with_index do |p, i|
     return i if p > 0.0
   end
   nil
 end
 
-def find_start_idx(times, hour)
-  idx = times.find_index { |t| Time.parse(t) >= hour }
-  debug "Current hour index: #{idx}" if idx
-  idx
-end
-
-def create_rain_info(precip, times, start_idx, hour)
-  debug "Precipitation for next 24 hours: #{precip[start_idx, 24]}"
-
-  rain_idx = find_rain_start(precip, times, start_idx)
-  return unless rain_idx
-
-  start_time = Time.parse(times[start_idx + rain_idx])
-  hours_until = ((start_time - hour) / 3600).round
-
-  {will_rain: true, start_time: start_time, hours_until: hours_until}
-end
-
 def rain_info(weather_data)
+  hour = TZInfo::Timezone.get(TIMEZONE).now.hour
+  debug "Current hour in #{TIMEZONE}: #{hour}"
+
   precip = weather_data.dig("hourly", "precipitation") || []
   times = weather_data.dig("hourly", "time") || []
-  hour = current_hour
 
-  debug "Current time in #{TIMEZONE} (rounded down): #{hour}"
-
-  start_idx = find_start_idx(times, hour)
-  return unless start_idx
-
-  create_rain_info(precip, times, start_idx, hour)
+  create_rain_info(precip, times, hour)
 end
 
-def notify(rain_info)
-  uri = URI("https://ntfy.sh/#{NTFY_TOPIC}")
-  request = Net::HTTP::Post.new(uri)
+def create_rain_info(precip, times, hour)
+  rain_hour = find_rain_start(precip, times, hour)
+  hours_until = rain_hour ? rain_hour - hour : nil
 
-  time = rain_info[:start_time].strftime("%-I%p").downcase
-  hours = rain_info[:hours_until]
-  request.body = "Rain expected in #{hours} #{(hours == 1) ? "hour" : "hours"} at #{time}. Cover the bike!"
+  {will_rain: !!rain_hour, start_time: start_time, hours_until: hours_until}
+end
+
+def notify(time, hours)
+  request = Net::HTTP::Post.new(NOTIFY_URL)
+
+  request.body = notification_body(time, hours)
 
   debug "Sending: #{request.body}"
   Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }
+end
+
+def notification_body(time, hours)
+  formatted_time = time.strftime("%-I%p").downcase
+  hour_word = hours == 1 ? "hour" : "hours"
+
+  "Rain expected in #{hours} #{hour_word} at #{formatted_time}. Cover the bike!"
 end
 
 def ping_snitch
@@ -97,7 +81,9 @@ def ping_snitch
 end
 
 if (info = rain_info(fetch_weather))
-  notify(info)
+  time = info[:start_time]
+  hours = info[:hours_until]
+  notify(time, hours)
   ping_snitch if ENV["SNITCH_ID"]
 else
   debug "No rain expected in the next 24 hours."
