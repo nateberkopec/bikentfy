@@ -13,7 +13,6 @@ jobs:
       NTFY_TOPIC: bike-rain-alert
       TIMEZONE: Asia/Tokyo
       WEATHER_MODEL: best_fit
-      DEBUG: true
 
     steps:
       - uses: actions/checkout@v4

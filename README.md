@@ -32,11 +32,6 @@ Run the script:
 ruby check_rain.rb
 ```
 
-For debug output:
-```bash
-DEBUG=true ruby check_rain.rb
-```
-
 ## GitHub Actions
 
 The script runs automatically every day at 17:00 JST via GitHub Actions. To customize:
@@ -52,7 +47,6 @@ The script runs automatically every day at 17:00 JST via GitHub Actions. To cust
 - `NTFY_TOPIC`: Your ntfy.sh topic name
 - `TIMEZONE`: IANA timezone name (e.g., 'Asia/Tokyo')
 - `WEATHER_MODEL`: Open-Meteo weather model (default: 'best_fit')
-- `DEBUG`: Set to 'true' for debug output
 
 ## License
 

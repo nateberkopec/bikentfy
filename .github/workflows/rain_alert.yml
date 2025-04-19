@@ -15,7 +15,6 @@ jobs:
       TIMEZONE: ${{ secrets.TIMEZONE }}
       WEATHER_MODEL: ${{ secrets.WEATHER_MODEL }}
       SNITCH_ID: ${{ secrets.SNITCH_ID }}
-      DEBUG: true
 
     steps:
       - uses: actions/checkout@v4
