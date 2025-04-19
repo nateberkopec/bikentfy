@@ -29,12 +29,7 @@ A simple Ruby script that checks for rain in the next 24 hours and sends a push 
 
 Run the script:
 ```bash
-ruby check_rain.rb
-```
-
-For debug output:
-```bash
-DEBUG=true ruby check_rain.rb
+bin/notify
 ```
 
 ## GitHub Actions
@@ -52,7 +47,6 @@ The script runs automatically every day at 17:00 JST via GitHub Actions. To cust
 - `NTFY_TOPIC`: Your ntfy.sh topic name
 - `TIMEZONE`: IANA timezone name (e.g., 'Asia/Tokyo')
 - `WEATHER_MODEL`: Open-Meteo weather model (default: 'best_fit')
-- `DEBUG`: Set to 'true' for debug output
 
 ## License
 
