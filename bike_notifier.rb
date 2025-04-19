@@ -13,6 +13,8 @@ class BikeNotifier
   NOTIFY_URL = URI("https://ntfy.sh/#{NTFY_TOPIC}")
   METEO_URL = "https://api.open-meteo.com/v1/forecast"
 
+  attr_accessor :now, :weather_data
+
   def weather_uri
     URI(METEO_URL).tap do |uri|
       uri.query = URI.encode_www_form(
@@ -26,9 +28,9 @@ class BikeNotifier
     end
   end
 
-  def fetch_weather = JSON.parse(Net::HTTP.get_response(weather_uri).body)
+  def fetch_weather = @weather_data ||= JSON.parse(Net::HTTP.get_response(weather_uri).body)
 
-  def now = TZInfo::Timezone.get(TIMEZONE).now
+  def now = @now ||= TZInfo::Timezone.get(TIMEZONE).now
 
   # returns number of hours until rain starts
   # if nil, no rain in next 24h
@@ -40,11 +42,9 @@ class BikeNotifier
     precip[current_hour, 24].find_index { |i| i > 0.0 }
   end
 
-  def notify(time, hours)
+  def notify(notification_body)
     request = Net::HTTP::Post.new(NOTIFY_URL)
-
-    request.body = notification_body(time, hours)
-
+    request.body = notification_body
     Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }
   end
 
@@ -69,11 +69,13 @@ class BikeNotifier
   end
 
   def run
-    meteo_json = fetch_weather
-    result = hours_until_rain(meteo_json)
+    fetch_weather
+    result = hours_until_rain(weather_data)
     return unless result
 
-    notify(result)
+    notification = notification_body(result)
+    notify(notification)
     ping_snitch if ENV["SNITCH_ID"]
+    notification
   end
 end
