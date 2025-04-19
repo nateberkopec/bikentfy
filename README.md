@@ -29,7 +29,7 @@ A simple Ruby script that checks for rain in the next 24 hours and sends a push 
 
 Run the script:
 ```bash
-ruby check_rain.rb
+bin/notify
 ```
 
 ## GitHub Actions
