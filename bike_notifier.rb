@@ -13,7 +13,8 @@ class BikeNotifier
   NOTIFY_URL = URI("https://ntfy.sh/#{NTFY_TOPIC}")
   METEO_URL = "https://api.open-meteo.com/v1/forecast"
 
-  attr_accessor :now, :weather_data
+  attr_accessor :weather_data
+  attr_writer :now
 
   def weather_uri
     URI(METEO_URL).tap do |uri|
@@ -35,11 +36,7 @@ class BikeNotifier
   # returns number of hours until rain starts
   # if nil, no rain in next 24h
   def hours_until_rain(weather_data)
-    current_hour = now.hour
-
-    precip = weather_data.dig("hourly", "precipitation")
-
-    precip[current_hour, 24].find_index { |i| i > 0.0 }
+    weather_data.dig("hourly", "precipitation")[now.hour, 24].find_index { |i| i > 0.0 }
   end
 
   def notify(notification_body)
@@ -63,10 +60,7 @@ class BikeNotifier
     "Rain expected #{formatted_until}. Cover the bike!"
   end
 
-  def ping_snitch
-    uri = URI("https://nosnch.in/#{ENV["SNITCH_ID"]}")
-    Net::HTTP.get_response(uri)
-  end
+  def ping_snitch = Net::HTTP.get_response(URI("https://nosnch.in/#{ENV["SNITCH_ID"]}"))
 
   def run
     fetch_weather
