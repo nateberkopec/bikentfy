@@ -27,4 +27,4 @@ jobs:
 
       - name: Run rain check
         run: |
-          bundle exec ruby check_rain.rb
+          bundle exec ruby bin/notify

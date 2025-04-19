@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require_relative '../bike_notifier'
+
+notifier = BikeNotifier.new
+notifier.run
