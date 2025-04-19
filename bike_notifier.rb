@@ -28,10 +28,12 @@ class BikeNotifier
 
   def fetch_weather = JSON.parse(Net::HTTP.get_response(weather_uri).body)
 
+  def now = TZInfo::Timezone.get(TIMEZONE).now
+
   # returns number of hours until rain starts
   # if nil, no rain in next 24h
   def hours_until_rain(weather_data)
-    current_hour = TZInfo::Timezone.get(TIMEZONE).now.hour
+    current_hour = now.hour
 
     precip = weather_data.dig("hourly", "precipitation")
 
@@ -47,12 +49,18 @@ class BikeNotifier
   end
 
   def notification_body(hours_until)
-    current_time = TZInfo::Timezone.get(TIMEZONE).now
-    time_of_rain = current_time + 3600 * hours_until
+    time_of_rain = now + 3600 * hours_until
     formatted_time = time_of_rain.strftime("%-I%p").downcase
-    hour_word = (hours_until == 1) ? "hour" : "hours"
+    formatted_until = case hours_until
+    when 0
+      "now"
+    when 1
+      "in 1 hour at #{formatted_time}"
+    else
+      "in #{hours_until} hours at #{formatted_time}"
+    end
 
-    "Rain expected in #{hours_until} #{hour_word} at #{formatted_time}. Cover the bike!"
+    "Rain expected #{formatted_until}. Cover the bike!"
   end
 
   def ping_snitch
