@@ -42,7 +42,7 @@ class BikeNotifier
   def notify(notification_body)
     request = Net::HTTP::Post.new(NOTIFY_URL)
     request.body = notification_body
-    Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }
+    Net::HTTP.start(NOTIFY_URL.hostname, NOTIFY_URL.port, use_ssl: true) { |http| http.request(request) }
   end
 
   def notification_body(hours_until)
@@ -65,11 +65,14 @@ class BikeNotifier
   def run
     fetch_weather
     result = hours_until_rain(weather_data)
-    return unless result
+    notification = "No rain in next 24h"
 
-    notification = notification_body(result)
-    notify(notification)
+    if result
+      notification = notification_body(result)
+      notify(notification)
+    end
+
     ping_snitch if ENV["SNITCH_ID"]
-    notification
+    puts notification
   end
 end
