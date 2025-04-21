@@ -12,6 +12,7 @@ class BikeNotifier
   WEATHER_MODEL = ENV.fetch("WEATHER_MODEL")
   NOTIFY_URL = URI("https://ntfy.sh/#{NTFY_TOPIC}")
   METEO_URL = "https://api.open-meteo.com/v1/forecast"
+  DEBUG = ENV["DEBUG"] || ENV["ACTIONS_RUNNER_DEBUG"]
 
   attr_accessor :weather_data
   attr_writer :now
