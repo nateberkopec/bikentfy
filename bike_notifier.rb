@@ -65,7 +65,6 @@ class BikeNotifier
   def run
     fetch_weather
     result = hours_until_rain(weather_data)
-    notification = "No rain in next 24h"
 
     if result
       notification = notification_body(result)
@@ -73,6 +72,6 @@ class BikeNotifier
     end
 
     ping_snitch if ENV["SNITCH_ID"]
-    puts notification
+    notification
   end
 end
