@@ -33,6 +33,8 @@ class BikeNotifier
 
   def now = @now ||= TZInfo::Timezone.get(TIMEZONE).now
 
+  def debug(msg) = puts msg if ENV["DEBUG"]
+
   # returns number of hours until rain starts
   # if nil, no rain in next 24h
   def hours_until_rain(weather_data)
@@ -65,13 +67,17 @@ class BikeNotifier
   def run
     fetch_weather
     result = hours_until_rain(weather_data)
+    debug "Weather data: #{weather_data}"
+    debug "Hours until rain: #{result}"
 
     if result
       notification = notification_body(result)
       notify(notification)
+      debug "Notification sent: #{notification}"
     end
 
     ping_snitch if ENV["SNITCH_ID"]
+    debug "Pinged snitch"
     notification
   end
 end
