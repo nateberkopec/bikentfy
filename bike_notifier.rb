@@ -33,7 +33,7 @@ class BikeNotifier
 
   def now = @now ||= TZInfo::Timezone.get(TIMEZONE).now
 
-  def debug(msg) = ENV['debug'] ? puts(msg) : nil
+  def debug(msg) = ENV["debug"] ? puts(msg) : nil
 
   # returns number of hours until rain starts
   # if nil, no rain in next 24h
