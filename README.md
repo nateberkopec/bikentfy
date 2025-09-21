@@ -34,7 +34,7 @@ bin/notify
 
 ## GitHub Actions
 
-The script runs automatically every day at 17:00 JST via GitHub Actions. To customize:
+The script runs automatically every day at 16:00 JST via GitHub Actions. To customize:
 
 1. Fork this repository
 2. Update the environment variables in `.github/workflows/rain_alert.yml`
